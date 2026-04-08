@@ -205,6 +205,7 @@ function getModeItems() {
 }
 
 function roundSizeFor(mode) {
+  if (window.matchMedia("(max-width: 768px)").matches) return 4;
   return 6;
 }
 

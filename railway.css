@@ -251,3 +251,113 @@ button.secondary { background: #5c6b82; }
   text-align: center;
   font-weight: 800;
 }
+
+@media (max-width: 768px) {
+  body {
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .container {
+    margin: 0;
+    max-width: none;
+    height: 100dvh;
+    border-radius: 0;
+    border: 0;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: none;
+  }
+
+  h1 {
+    font-size: 1.15rem;
+    line-height: 1.15;
+  }
+
+  .subtitle {
+    margin: 4px 0 8px;
+    font-size: 0.82rem;
+  }
+
+  .mode-panel {
+    margin-bottom: 8px;
+    gap: 6px;
+  }
+
+  .mode-panel select,
+  .mode-panel button {
+    padding: 6px 8px;
+    font-size: 0.84rem;
+  }
+
+  .bank {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .token {
+    font-size: 0.78rem;
+    padding: 6px 8px;
+    min-width: 94px;
+    flex: 0 0 auto;
+  }
+
+  .grid {
+    margin-top: 8px;
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .card {
+    padding: 8px;
+  }
+
+  .signal {
+    font-size: 0.95rem;
+    line-height: 1.05;
+  }
+
+  .context {
+    font-size: 0.78rem;
+    margin-top: 2px;
+  }
+
+  .sig-symbol {
+    margin-bottom: 4px;
+    transform: scale(0.9);
+    transform-origin: left top;
+  }
+
+  .drop-zone {
+    min-height: 34px;
+    margin-top: 6px;
+  }
+
+  .feedback {
+    margin-top: 4px;
+    min-height: 16px;
+    font-size: 0.78rem;
+  }
+
+  .actions {
+    margin-top: 8px;
+    gap: 6px;
+  }
+
+  button {
+    padding: 8px 10px;
+    font-size: 0.84rem;
+  }
+
+  #result {
+    margin-top: 6px;
+    font-size: 0.9rem;
+  }
+}
