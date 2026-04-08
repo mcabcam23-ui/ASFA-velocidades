@@ -1,0 +1,253 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(180deg, #f6f9ff, #edf3ff);
+  color: #14233e;
+}
+.container {
+  max-width: 1150px;
+  margin: 24px auto;
+  background: #fff;
+  border: 1px solid #d8e2f3;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 14px 30px rgba(30, 60, 110, 0.10);
+}
+h1 { margin: 0; text-align: center; }
+.subtitle { text-align: center; margin: 8px 0 18px; color: #3a4e75; }
+.mode-panel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.mode-panel label { font-weight: 700; color: #223b68; }
+.mode-panel select {
+  border: 1px solid #c6d8f4;
+  border-radius: 9px;
+  padding: 8px 10px;
+  font-weight: 600;
+  background: #fff;
+}
+
+.bank {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  background: #f7faff;
+  border: 1px solid #d7e4f8;
+  border-radius: 12px;
+}
+.token {
+  background: #fff;
+  border: 1px solid #c8d8f0;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: .92rem;
+  font-weight: 700;
+  cursor: grab;
+  box-shadow: 0 4px 10px rgba(20, 40, 74, 0.10);
+  text-align: center;
+  white-space: pre-line;
+  line-height: 1.25;
+}
+
+.grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.card {
+  border: 1px solid #d9e5f9;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+}
+.sig-symbol {
+  display: inline-block;
+  width: 56px;
+  height: 34px;
+  margin-bottom: 8px;
+  background-image: url("rail-symbols-strip.png");
+  background-repeat: no-repeat;
+  background-size: 56px 650px;
+}
+
+/* Recortes directos del sprite original (tabla). */
+.sprite-via-libre { background-position: 0 -58px; height: 22px; }
+.sprite-yellow { background-position: 0 -164px; height: 24px; }
+.sprite-double-yellow { background-position: 0 -232px; height: 40px; }
+.sprite-yellow-green { background-position: 0 -256px; height: 40px; }
+.sprite-preanuncio { background-position: 0 -192px; height: 36px; }
+.sprite-pair-yellow { background-position: 0 -388px; height: 26px; }
+.sprite-pair-yellow-green { background-position: 0 -410px; height: 30px; }
+.sprite-pair-plus { background-position: 0 -388px; height: 50px; }
+.sprite-red { background-position: 0 -498px; height: 24px; }
+.sprite-switch { background-position: 0 -603px; height: 42px; }
+.sprite-cross { background-position: 0 -482px; height: 36px; }
+
+/* Icono exacto enviado por el usuario */
+.sprite-via-libre {
+  background-image: url("via-libre-condicional.png");
+  background-position: center;
+  background-size: contain;
+  width: 56px;
+  height: 56px;
+}
+.sprite-yellow {
+  background-image: url("anuncio-parada.png");
+  background-position: center;
+  background-size: contain;
+  width: 56px;
+  height: 56px;
+}
+.sprite-anuncio-anuncio {
+  background-image: url("anuncio-anuncio.png");
+  background-position: center;
+  background-size: contain;
+  width: 120px;
+  height: 34px;
+}
+.sprite-anuncio-parada-mas-inmediata {
+  background-image: url("anuncio-parada-mas-inmediata.png");
+  background-position: center;
+  background-size: contain;
+  width: 120px;
+  height: 34px;
+}
+.sprite-inmediata-mas-inmediata {
+  background-image: url("inmediata-mas-inmediata.png");
+  background-position: center;
+  background-size: contain;
+  width: 120px;
+  height: 34px;
+}
+.sprite-anuncio-parada-inmediata {
+  background-image: url("anuncio-parada-inmediata.png");
+  background-position: center;
+  background-size: contain;
+  width: 56px;
+  height: 56px;
+}
+.sprite-preanuncio-parada {
+  background-image: url("preanuncio-parada.png");
+  background-position: center;
+  background-size: contain;
+  width: 32px;
+  height: 64px;
+}
+.sprite-anuncio-precaucion {
+  background-image: url("anuncio-precaucion.png");
+  background-position: center;
+  background-size: contain;
+  width: 32px;
+  height: 64px;
+}
+.sprite-csv-ltv {
+  background-image: url("csv-ltv.png");
+  background-position: center;
+  background-size: contain;
+  width: 140px !important;
+  height: 58px !important;
+}
+.sprite-rebase-autorizado {
+  background-image: url("rebase-autorizado.png");
+  background-position: center;
+  background-size: contain;
+  width: 82px;
+  height: 30px;
+}
+.sprite-rebase-parada {
+  background-image: url("rebase-parada.png");
+  background-position: center;
+  background-size: contain;
+  width: 56px;
+  height: 56px;
+}
+.sprite-paso-nivel-sin-proteger {
+  background-image: url("paso-nivel-sin-proteger.png");
+  background-position: center;
+  background-size: contain;
+  width: 64px;
+  height: 64px;
+}
+.sprite-preanuncio-mas-anuncio {
+  background-image: url("preanuncio-mas-anuncio.png");
+  background-position: center;
+  background-size: contain;
+  width: 130px;
+  height: 56px;
+}
+.sprite-preanuncio-mas-inmediata {
+  background-image: url("preanuncio-mas-inmediata.png");
+  background-position: center;
+  background-size: contain;
+  width: 130px;
+  height: 56px;
+}
+.signal {
+  font-weight: 800;
+  color: #13274b;
+}
+.context {
+  margin-top: 4px;
+  font-size: .9rem;
+  color: #425a86;
+}
+.signal-sub {
+  font-weight: 400;
+  color: #425a86;
+}
+
+.drop-zone {
+  margin-top: 10px;
+  min-height: 46px;
+  border: 2px dashed #8a95a8;
+  border-radius: 10px;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+.drop-zone.over { border-color: #2f67c6; background: #edf4ff; }
+.drop-zone.correct { border-color: #1f9747; background: #e9f9ee; }
+.drop-zone.wrong { border-color: #c73f3f; background: #ffecec; }
+
+.feedback {
+  margin-top: 7px;
+  min-height: 20px;
+  font-size: .92rem;
+  font-weight: 700;
+  text-align: center;
+}
+.feedback.ok { color: #1f9747; }
+.feedback.bad { color: #c73f3f; }
+
+.actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+button {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 15px;
+  color: #fff;
+  background: #2d5bb0;
+  font-weight: 700;
+  cursor: pointer;
+}
+button.secondary { background: #5c6b82; }
+#result {
+  margin-top: 14px;
+  text-align: center;
+  font-weight: 800;
+}
