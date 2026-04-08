@@ -298,6 +298,8 @@ button.secondary { background: #5c6b82; }
     overflow-y: hidden;
     gap: 6px;
     padding: 8px;
+    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
   }
 
   .token {
@@ -305,6 +307,7 @@ button.secondary { background: #5c6b82; }
     padding: 6px 8px;
     min-width: 94px;
     flex: 0 0 auto;
+    touch-action: none;
   }
 
   .grid {
@@ -338,6 +341,7 @@ button.secondary { background: #5c6b82; }
   .drop-zone {
     min-height: 34px;
     margin-top: 6px;
+    touch-action: none;
   }
 
   .feedback {

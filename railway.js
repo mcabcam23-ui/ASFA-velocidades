@@ -8,7 +8,11 @@ const newBtn = document.getElementById("newBtn");
 const result = document.getElementById("result");
 
 let dragAnswerId = null;
-let activeTouchToken = null;
+
+const TOUCH_MOVE_PX = 12;
+const HOLD_MS = 520;
+
+let activeTouch = null;
 
 const ITEMS = [
   // Convencional (sin aumento)
@@ -101,9 +105,21 @@ function symbolHtml(type) {
   return `<div class="sig-symbol sprite-${type}" aria-hidden="true"></div>`;
 }
 
+function findDropZoneAt(x, y) {
+  const el = document.elementFromPoint(x, y);
+  if (!el) return null;
+  const zone = el.closest(".drop-zone");
+  if (zone) return zone;
+  const zones = [...document.querySelectorAll(".drop-zone")];
+  for (let i = 0; i < zones.length; i += 1) {
+    const r = zones[i].getBoundingClientRect();
+    if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return zones[i];
+  }
+  return null;
+}
+
 function addTokenEvents(token) {
   let holdTimer = null;
-  const HOLD_MS = 450;
 
   function clearHold() {
     if (holdTimer) {
@@ -112,13 +128,17 @@ function addTokenEvents(token) {
     }
   }
 
-  function startHold() {
+  function startHoldIfInCell() {
     clearHold();
+    if (!token.closest(".drop-zone")) return;
     holdTimer = setTimeout(() => {
+      holdTimer = null;
       if (token.closest(".drop-zone")) {
         bank.appendChild(token);
         clearFeedback();
       }
+      if (activeTouch && activeTouch.token === token) activeTouch = null;
+      document.querySelectorAll(".drop-zone").forEach((z) => z.classList.remove("over"));
     }, HOLD_MS);
   }
 
@@ -128,25 +148,37 @@ function addTokenEvents(token) {
     e.dataTransfer.setData("text/plain", dragAnswerId);
   });
 
-  token.addEventListener("mousedown", startHold);
-  token.addEventListener("touchstart", () => {
-    startHold();
-    activeTouchToken = token;
-  }, { passive: true });
-
+  token.addEventListener("mousedown", startHoldIfInCell);
   token.addEventListener("mouseup", clearHold);
   token.addEventListener("mouseleave", clearHold);
-  token.addEventListener("touchend", clearHold);
-  token.addEventListener("touchcancel", clearHold);
-  token.addEventListener("touchmove", (e) => {
-    clearHold();
-    const touch = e.touches[0];
-    if (!touch) return;
-    const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    document.querySelectorAll(".drop-zone").forEach((z) => z.classList.remove("over"));
-    const zone = el ? el.closest(".drop-zone") : null;
-    if (zone) zone.classList.add("over");
-  }, { passive: true });
+
+  token.addEventListener(
+    "touchstart",
+    (e) => {
+      const t = e.changedTouches[0];
+      if (!t) return;
+      clearHold();
+      activeTouch = {
+        token,
+        startX: t.clientX,
+        startY: t.clientY,
+        moved: false,
+        holdTimer: null
+      };
+      if (token.closest(".drop-zone")) {
+        activeTouch.holdTimer = setTimeout(() => {
+          if (!activeTouch || activeTouch.token !== token || activeTouch.moved) return;
+          if (token.closest(".drop-zone")) {
+            bank.appendChild(token);
+            clearFeedback();
+          }
+          activeTouch = null;
+          document.querySelectorAll(".drop-zone").forEach((z) => z.classList.remove("over"));
+        }, HOLD_MS);
+      }
+    },
+    { passive: true }
+  );
 }
 
 function clearFeedback() {
@@ -299,17 +331,62 @@ resetBtn.addEventListener("click", () => {
   clearFeedback();
 });
 
-document.addEventListener("touchend", (e) => {
-  if (!activeTouchToken) return;
-  const touch = e.changedTouches[0];
-  const el = touch ? document.elementFromPoint(touch.clientX, touch.clientY) : null;
-  const zone = el ? el.closest(".drop-zone") : null;
-  if (zone) {
-    placeTokenInZone(activeTouchToken, zone);
+document.addEventListener(
+  "touchmove",
+  (e) => {
+    if (!activeTouch) return;
+    const t = e.touches[0];
+    if (!t) return;
+    const dx = t.clientX - activeTouch.startX;
+    const dy = t.clientY - activeTouch.startY;
+    if (Math.hypot(dx, dy) >= TOUCH_MOVE_PX) {
+      activeTouch.moved = true;
+      if (activeTouch.holdTimer) {
+        clearTimeout(activeTouch.holdTimer);
+        activeTouch.holdTimer = null;
+      }
+    }
+    document.querySelectorAll(".drop-zone").forEach((z) => z.classList.remove("over"));
+    const zone = findDropZoneAt(t.clientX, t.clientY);
+    if (zone) zone.classList.add("over");
+  },
+  { passive: true }
+);
+
+document.addEventListener(
+  "touchend",
+  (e) => {
+    if (!activeTouch) return;
+    const touch = e.changedTouches[0];
+    if (!touch) {
+      activeTouch = null;
+      return;
+    }
+    if (activeTouch.holdTimer) {
+      clearTimeout(activeTouch.holdTimer);
+      activeTouch.holdTimer = null;
+    }
+    const token = activeTouch.token;
+    const moved = activeTouch.moved;
+    activeTouch = null;
+    document.querySelectorAll(".drop-zone").forEach((z) => z.classList.remove("over"));
+
+    const zone = findDropZoneAt(touch.clientX, touch.clientY);
+    const fromZone = token.closest(".drop-zone");
+    if (zone && (moved || !fromZone || zone !== fromZone)) {
+      placeTokenInZone(token, zone);
+    }
+  },
+  { passive: true }
+);
+
+document.addEventListener("touchcancel", () => {
+  if (activeTouch && activeTouch.holdTimer) {
+    clearTimeout(activeTouch.holdTimer);
   }
+  activeTouch = null;
   document.querySelectorAll(".drop-zone").forEach((z) => z.classList.remove("over"));
-  activeTouchToken = null;
-}, { passive: true });
+});
 
 newBtn.addEventListener("click", renderRound);
 modeBtn.addEventListener("click", renderRound);
