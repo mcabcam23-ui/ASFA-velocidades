@@ -18,7 +18,9 @@ const ITEMS = [
   // Convencional (sin aumento)
   { signal: "Via libre condicional", context: "Convencional", answer: "Tipo >160 -> 160 / Tipo ≤160 -> Tipo", family: "conv", plus: false },
   { signal: "Anuncio de parada", context: "Convencional", answer: "Tipo >100 -> 80 / Tipo ≤100 -> 60", family: "conv", plus: false },
-  { signal: "Anuncio de parada inmediata", context: "Convencional", answer: "60 km/h", family: "conv", plus: false },
+  { signal: "Anuncio de parada inmediata", context: "Convencional", answer: "Tipo >100 -> 80 / Tipo ≤100 -> 60", family: "conv", plus: false },
+  { signal: "Parada (baliza previa)", context: "Convencional", answer: "Tipo >100 -> 60 / Tipo ≤100 -> 50", family: "conv", plus: false },
+  { signal: "Parada (acercándose a baliza de señal)", context: "Convencional", answer: "Tipo >100 -> 30 / Tipo ≤100 -> 25", family: "conv", plus: false },
   { signal: "Anuncio de parada y Anuncio de parada", context: "Convencional", answer: "60 km/h", family: "conv", plus: false },
   { signal: "Anuncio de parada y Anuncio de parada inmediata", context: "Convencional", answer: "60 km/h", family: "conv", plus: false },
   { signal: "Anuncio de parada inmediata y Anuncio de parada inmediata", context: "Convencional", answer: "60 km/h", family: "conv", plus: false },
@@ -40,6 +42,9 @@ const ITEMS = [
   { signal: "Rebase autorizado en parada (baliza previa)", context: "Convencional con aumento", answer: "100 km/h (sin aumento: 40)", family: "conv", plus: true },
 
   // Alta velocidad (sin aumento)
+  { signal: "Parada (baliza previa)", context: "Alta velocidad", answer: "Tipo >100 -> 60 / Tipo ≤100 -> 50", family: "av", plus: false },
+  { signal: "Parada (acercándose a baliza de señal)", context: "Alta velocidad", answer: "Tipo >100 -> 30 / Tipo ≤100 -> 25", family: "av", plus: false },
+  { signal: "Anuncio de parada inmediata", context: "Alta velocidad", answer: "Tipo >100 -> 100 / Tipo ≤100 -> Tipo", family: "av", plus: false },
   { signal: "Anuncio de parada", context: "Alta velocidad", answer: "Tipo >100 -> 100 / Tipo ≤100 -> Tipo", family: "av", plus: false },
   { signal: "Anuncio de precaucion", context: "Alta velocidad", answer: "Tipo >100 -> 100 / Tipo ≤100 -> Tipo", family: "av", plus: false },
   { signal: "Preanuncio de parada", context: "Alta velocidad", answer: "Tipo >100 -> 100 / Tipo ≤100 -> 80", family: "av", plus: false },
@@ -47,7 +52,6 @@ const ITEMS = [
   { signal: "Paso a nivel sin proteger", context: "Alta velocidad", answer: "VCF inicial -> 30 / VCF cuando llegue a 30 -> 80", family: "av", plus: false },
   { signal: "Baliza previa (2a senal)", context: "Preanuncio de parada - Anuncio de parada (AV)", answer: "Tipo ≥100 -> 100 / Tipo <100 -> 80", family: "av", plus: false },
   { signal: "Baliza senal (2a senal)", context: "Preanuncio de parada - Anuncio de parada inmediata (AV)", answer: "Tipo ≥100 -> 90 / Tipo <100 -> 60", family: "av", plus: false },
-  { signal: "Rebase autorizado (acercandose a baliza)", context: "Alta velocidad", answer: "Tipo >100 -> 30 / Tipo ≤100 -> 25", family: "av", plus: false },
 
   // Alta velocidad (con aumento)
   { signal: "Via libre condicional", context: "Alta velocidad con aumento", answer: "Tipo >160 -> 160 / Tipo ≤160 -> Tipo", family: "av", plus: true },
@@ -78,6 +82,8 @@ function normalizeAnswer(text) {
 function getSymbolType(item) {
   if (item.signal.includes("Paso a nivel sin proteger")) return "paso-nivel-sin-proteger";
   if (item.signal.includes("Rebase autorizado en parada")) return "rebase-parada";
+  if (item.signal.includes("Parada (baliza previa)")) return "rebase-autorizado";
+  if (item.signal.includes("Parada (acercándose a baliza de señal)")) return "rebase-autorizado";
   if (item.context.includes("Preanuncio de parada - Anuncio de parada inmediata")) return "preanuncio-mas-inmediata";
   if (item.context.includes("Preanuncio de parada - Anuncio de parada")) return "preanuncio-mas-anuncio";
   if (item.signal.includes("Preanuncio de parada - Anuncio de parada inmediata")) return "preanuncio-mas-inmediata";
@@ -106,16 +112,79 @@ function symbolHtml(type) {
 }
 
 function findDropZoneAt(x, y) {
-  const el = document.elementFromPoint(x, y);
-  if (!el) return null;
-  const zone = el.closest(".drop-zone");
-  if (zone) return zone;
+  const stack = document.elementsFromPoint(x, y);
+  for (let i = 0; i < stack.length; i += 1) {
+    const zone = stack[i].closest(".drop-zone");
+    if (zone) return zone;
+  }
   const zones = [...document.querySelectorAll(".drop-zone")];
   for (let i = 0; i < zones.length; i += 1) {
     const r = zones[i].getBoundingClientRect();
     if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return zones[i];
   }
   return null;
+}
+
+function liftTokenTouchDrag(token, clientX, clientY) {
+  const r = token.getBoundingClientRect();
+  token._touchDrag = {
+    offsetX: clientX - r.left,
+    offsetY: clientY - r.top,
+    originParent: token.parentNode,
+    originNext: token.nextSibling,
+    baseLeft: r.left,
+    baseTop: r.top,
+    liftClientX: clientX,
+    liftClientY: clientY
+  };
+  document.body.appendChild(token);
+  token.classList.add("token--touch-dragging");
+  token.style.position = "fixed";
+  token.style.left = `${r.left}px`;
+  token.style.top = `${r.top}px`;
+  token.style.transform = "translate(0px, 0px)";
+  token.style.width = `${r.width}px`;
+  token.style.maxWidth = `${r.width}px`;
+  token.style.zIndex = "10000";
+  token.style.pointerEvents = "none";
+  token.style.boxSizing = "border-box";
+  token.style.webkitBackfaceVisibility = "hidden";
+  token.style.backfaceVisibility = "hidden";
+}
+
+function moveTokenTouchDrag(token, clientX, clientY) {
+  const d = token._touchDrag;
+  if (!d) return;
+  const dx = clientX - d.liftClientX;
+  const dy = clientY - d.liftClientY;
+  token.style.transform = `translate(${dx}px, ${dy}px)`;
+}
+
+function endTokenTouchDrag(token) {
+  const d = token._touchDrag;
+  token.classList.remove("token--touch-dragging");
+  token.style.position = "";
+  token.style.left = "";
+  token.style.top = "";
+  token.style.transform = "";
+  token.style.width = "";
+  token.style.maxWidth = "";
+  token.style.zIndex = "";
+  token.style.pointerEvents = "";
+  token.style.boxSizing = "";
+  token.style.webkitBackfaceVisibility = "";
+  token.style.backfaceVisibility = "";
+  delete token._touchDrag;
+  return d || null;
+}
+
+function restoreTokenToOrigin(token, d) {
+  if (!d || !d.originParent) return;
+  if (d.originNext && d.originNext.parentNode === d.originParent) {
+    d.originParent.insertBefore(token, d.originNext);
+  } else {
+    d.originParent.appendChild(token);
+  }
 }
 
 function addTokenEvents(token) {
@@ -160,9 +229,11 @@ function addTokenEvents(token) {
       clearHold();
       activeTouch = {
         token,
+        touchId: t.identifier,
         startX: t.clientX,
         startY: t.clientY,
         moved: false,
+        dragging: false,
         holdTimer: null
       };
       if (token.closest(".drop-zone")) {
@@ -331,61 +402,94 @@ resetBtn.addEventListener("click", () => {
   clearFeedback();
 });
 
+function touchById(e, id) {
+  for (let i = 0; i < e.touches.length; i += 1) {
+    if (e.touches[i].identifier === id) return e.touches[i];
+  }
+  return null;
+}
+
 document.addEventListener(
   "touchmove",
   (e) => {
     if (!activeTouch) return;
-    const t = e.touches[0];
+    const t = touchById(e, activeTouch.touchId);
     if (!t) return;
     const dx = t.clientX - activeTouch.startX;
     const dy = t.clientY - activeTouch.startY;
-    if (Math.hypot(dx, dy) >= TOUCH_MOVE_PX) {
+    if (activeTouch.dragging) {
+      e.preventDefault();
+      moveTokenTouchDrag(activeTouch.token, t.clientX, t.clientY);
+    } else if (Math.hypot(dx, dy) >= TOUCH_MOVE_PX) {
+      e.preventDefault();
       activeTouch.moved = true;
       if (activeTouch.holdTimer) {
         clearTimeout(activeTouch.holdTimer);
         activeTouch.holdTimer = null;
       }
+      activeTouch.dragging = true;
+      liftTokenTouchDrag(activeTouch.token, t.clientX, t.clientY);
     }
     document.querySelectorAll(".drop-zone").forEach((z) => z.classList.remove("over"));
     const zone = findDropZoneAt(t.clientX, t.clientY);
     if (zone) zone.classList.add("over");
   },
-  { passive: true }
+  { passive: false }
 );
 
 document.addEventListener(
   "touchend",
   (e) => {
     if (!activeTouch) return;
-    const touch = e.changedTouches[0];
-    if (!touch) {
-      activeTouch = null;
-      return;
+    let touch = null;
+    for (let i = 0; i < e.changedTouches.length; i += 1) {
+      if (e.changedTouches[i].identifier === activeTouch.touchId) {
+        touch = e.changedTouches[i];
+        break;
+      }
     }
+    if (!touch) return;
     if (activeTouch.holdTimer) {
       clearTimeout(activeTouch.holdTimer);
       activeTouch.holdTimer = null;
     }
     const token = activeTouch.token;
     const moved = activeTouch.moved;
+    const dragging = activeTouch.dragging;
     activeTouch = null;
     document.querySelectorAll(".drop-zone").forEach((z) => z.classList.remove("over"));
 
+    let origin = null;
+    if (dragging) {
+      origin = endTokenTouchDrag(token);
+    }
     const zone = findDropZoneAt(touch.clientX, touch.clientY);
-    const fromZone = token.closest(".drop-zone");
-    if (zone && (moved || !fromZone || zone !== fromZone)) {
+
+    if (zone && moved) {
       placeTokenInZone(token, zone);
+    } else if (dragging && origin) {
+      restoreTokenToOrigin(token, origin);
     }
   },
   { passive: true }
 );
 
-document.addEventListener("touchcancel", () => {
-  if (activeTouch && activeTouch.holdTimer) {
+document.addEventListener("touchcancel", (e) => {
+  if (!activeTouch) return;
+  const id = activeTouch.touchId;
+  const cancelled = [...e.changedTouches].some((t) => t.identifier === id);
+  if (!cancelled) return;
+  if (activeTouch.holdTimer) {
     clearTimeout(activeTouch.holdTimer);
   }
+  const token = activeTouch.token;
+  const dragging = activeTouch.dragging;
   activeTouch = null;
   document.querySelectorAll(".drop-zone").forEach((z) => z.classList.remove("over"));
+  if (dragging) {
+    const origin = endTokenTouchDrag(token);
+    if (origin) restoreTokenToOrigin(token, origin);
+  }
 });
 
 newBtn.addEventListener("click", renderRound);

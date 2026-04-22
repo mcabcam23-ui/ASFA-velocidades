@@ -56,6 +56,14 @@ h1 { margin: 0; text-align: center; }
   white-space: pre-line;
   line-height: 1.25;
 }
+.token--touch-dragging {
+  opacity: 1;
+  /* Sombra suave: en iOS/Android una sombra muy fuerte parecía “lo único que se movía”. */
+  box-shadow: 0 6px 16px rgba(20, 40, 74, 0.18);
+  border-color: #2f67c6;
+  will-change: transform;
+  -webkit-font-smoothing: antialiased;
+}
 
 .grid {
   margin-top: 18px;
@@ -157,11 +165,11 @@ h1 { margin: 0; text-align: center; }
   height: 58px !important;
 }
 .sprite-rebase-autorizado {
-  background-image: url("rebase-autorizado.png");
+  background-image: url("parada-acercandose-baliza-senal.png");
   background-position: center;
   background-size: contain;
-  width: 82px;
-  height: 30px;
+  width: 56px;
+  height: 56px;
 }
 .sprite-rebase-parada {
   background-image: url("rebase-parada.png");
